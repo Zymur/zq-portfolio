@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import {
   ArrowDownTrayIcon,
@@ -57,6 +58,37 @@ const nav = [
 export default function Page() {
   const [dark, setDark] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [showHeroAbout, setShowHeroAbout] = useState(false);
+  const heroRef = useRef<HTMLElement>(null);
+  const greetingRef = useRef<HTMLParagraphElement>(null);
+  const heroButtonsRef = useRef<HTMLDivElement>(null);
+  const portraitRef = useRef<HTMLDivElement>(null);
+
+  // The portrait is taken out of the grid's sizing calculation.
+  // Expanding the personal-details panel cannot change its dimensions.
+  useLayoutEffect(() => {
+    const measure = () => {
+      const hero = heroRef.current;
+      const greeting = greetingRef.current;
+      const buttons = heroButtonsRef.current;
+      const portrait = portraitRef.current;
+      if (!hero || !greeting || !buttons || !portrait) return;
+      if (window.matchMedia('(max-width: 680px)').matches) {
+        portrait.style.removeProperty('--portrait-top');
+        portrait.style.removeProperty('--portrait-height');
+        return;
+      }
+      const heroTop = hero.getBoundingClientRect().top;
+      const top = greeting.getBoundingClientRect().top - heroTop;
+      const bottom = buttons.getBoundingClientRect().bottom - heroTop;
+      portrait.style.setProperty('--portrait-top', `${top}px`);
+      portrait.style.setProperty('--portrait-height', `${Math.max(1, bottom - top)}px`);
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    document.fonts.ready.then(measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
   const [showAllCerts, setShowAllCerts] = useState(false);
   const [educationView, setEducationView] = useState<'College' | 'High School' | 'Elementary' | 'All'>('College');
 
@@ -194,9 +226,9 @@ export default function Page() {
 
       <main className="shell">
         {/* HOME */}
-        <section id="home" className="paper hero-paper">
+        <section id="home" className="paper hero-paper" ref={heroRef}>
           <div className="hero-copy">
-            <p className="hero-kicker">HELLO, I&apos;M</p>
+            <p className="hero-kicker" ref={greetingRef}>HELLO, I&apos;M</p>
 
             <h1 className="hero-name">Zymur C. <span>Quisado</span></h1>
 
@@ -207,151 +239,45 @@ export default function Page() {
             <p className="hero-desc">
               {profile.summary} I&apos;m currently pursuing my BS in
               Information Technology, with a strong interest in
-              software development and other technology roles.
-            </p>
-
-            <details
-              style={{
-                marginTop: '15px',
-                marginBottom: '17px',
-              }}
-            >
-              <summary
-                style={{
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '7px',
-                  fontFamily: 'Outfit, sans-serif',
-                  fontWeight: 800,
-                  fontSize: '14px',
-                  color: 'var(--ink)',
-                  listStyle: 'none',
-                }}
+              software development and other technology roles.{' '}
+              <button
+                type="button"
+                className="hero-about-trigger"
+                aria-expanded={showHeroAbout}
+                aria-controls="hero-about-details"
+                onClick={() => setShowHeroAbout(!showHeroAbout)}
               >
                 More about me
-                <ChevronDownIcon
-                  aria-hidden="true"
-                  style={{
-                    width: '15px',
-                    height: '15px',
-                    opacity: 0.35,
-                  }}
-                />
-              </summary>
+                <ChevronDownIcon className={showHeroAbout ? 'hero-about-chevron expanded' : 'hero-about-chevron'} aria-hidden="true" />
+              </button>
+            </p>
 
-              <div
-                style={{
-                  marginTop: '12px',
-                  padding: '13px 15px',
-                  border: '1px solid var(--line)',
-                  borderRadius: '3px',
-                  background: 'var(--subtle)',
-                  display: 'grid',
-                  gap: '12px',
-                  fontSize: '12px',
-                  lineHeight: 1.65,
-                  color: 'var(--muted)',
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '10px',
-                  }}
-                >
-                  <CalendarDaysIcon
-                    style={{
-                      width: '17px',
-                      height: '17px',
-                      flexShrink: 0,
-                      color: 'var(--ink)',
-                    }}
-                  />
-                  <span>
-                    <strong style={{ color: 'var(--ink)' }}>
-                      Birthdate:
-                    </strong>{' '}
-                    July 1, 2004
-                  </span>
+            <div className="hero-about">
+              {showHeroAbout && (
+                <div id="hero-about-details" className="hero-about-card">
+                  <div className="hero-about-grid">
+                    <div className="hero-about-item">
+                      <CalendarDaysIcon aria-hidden="true" />
+                      <span><strong>Birthdate</strong>July 1, 2004</span>
+                    </div>
+                    <div className="hero-about-item">
+                      <span className="hero-about-symbol" aria-hidden="true">♂</span>
+                      <span><strong>Sex</strong>Male</span>
+                    </div>
+                    <div className="hero-about-item">
+                      <GiftIcon aria-hidden="true" />
+                      <span><strong>Age</strong>22</span>
+                    </div>
+                  </div>
+                  <div className="hero-about-item hero-about-hobbies">
+                    <SparklesIcon aria-hidden="true" />
+                    <span><strong>Hobbies &amp; interests</strong>Movies, TV series, anime, history, reading, geography, chess, and video games.</span>
+                  </div>
                 </div>
+              )}
+            </div>
 
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '10px',
-                  }}
-                >
-                  <GiftIcon
-                    style={{
-                      width: '17px',
-                      height: '17px',
-                      flexShrink: 0,
-                      color: 'var(--ink)',
-                    }}
-                  />
-                  <span>
-                    <strong style={{ color: 'var(--ink)' }}>
-                      Age:
-                    </strong>{' '}
-                    22
-                  </span>
-                </div>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '10px',
-                  }}
-                >
-                  <MapPinIcon
-                    style={{
-                      width: '17px',
-                      height: '17px',
-                      flexShrink: 0,
-                      color: 'var(--ink)',
-                    }}
-                  />
-                  <span>
-                    <strong style={{ color: 'var(--ink)' }}>
-                      Birthplace:
-                    </strong>{' '}
-                    Ponong, Tomas Oppus, Southern Leyte, Philippines
-                  </span>
-                </div>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '10px',
-                  }}
-                >
-                  <SparklesIcon
-                    style={{
-                      width: '17px',
-                      height: '17px',
-                      flexShrink: 0,
-                      color: 'var(--ink)',
-                    }}
-                  />
-                  <span>
-                    <strong style={{ color: 'var(--ink)' }}>
-                      Hobbies &amp; interests:
-                    </strong>{' '}
-                    Watching TV series, movies, anime, and
-                    historical documentaries; reading history,
-                    trivia, and geography; playing chess and
-                    video games.
-                  </span>
-                </div>
-              </div>
-            </details>
-
-            <div className="button-row">
+            <div className="button-row" ref={heroButtonsRef}>
               <a className="btn primary" href="#projects">
                 Explore my work <ArrowRightIcon />
               </a>
@@ -365,34 +291,18 @@ export default function Page() {
               </a>
             </div>
 
-            <div className="hero-meta">
-              <span>
-                <MapPinIcon /> {profile.location}, Philippines
-              </span>
-              <span>
-                <EnvelopeIcon />
-                <a href={'mailto:' + profile.email}>
-                  {profile.email}
-                </a>
-              </span>
-            </div>
           </div>
 
-          <div className="portrait-panel">
-            <div className="portrait-grid" />
-
-            <Image
-              src="/profile.png"
-              alt="Professional portrait of Zymur Quisado"
-              fill
-              priority
-              sizes="(max-width: 800px) 100vw, 430px"
-              className="portrait"
-            />
-
-            <div className="portrait-label">
-              <span>01 / PROFILE</span>
-              <strong>BUILD. LEAD. DELIVER.</strong>
+          <div className="hero-profile-column" ref={portraitRef}>
+            <div className="portrait-panel">
+              <Image
+                src="/profile.png"
+                alt="Professional portrait of Zymur Quisado"
+                fill
+                priority
+                sizes="(max-width: 680px) 260px, (max-width: 900px) 280px, 320px"
+                className="portrait"
+              />
             </div>
           </div>
         </section>
