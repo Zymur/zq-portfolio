@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -59,6 +58,7 @@ export default function Page() {
   const [dark, setDark] = useState(false);
   const [menu, setMenu] = useState(false);
   const [showAllCerts, setShowAllCerts] = useState(false);
+  const [educationView, setEducationView] = useState<'College' | 'High School' | 'Elementary' | 'All'>('College');
 
   // Featured is selected by default.
   const [filter, setFilter] = useState('Featured');
@@ -198,11 +198,7 @@ export default function Page() {
           <div className="hero-copy">
             <p className="hero-kicker">HELLO, I&apos;M</p>
 
-            <h1>
-              Zymur C.
-              <br />
-              <span>Quisado.</span>
-            </h1>
+            <h1 className="hero-name">Zymur C. <span>Quisado</span></h1>
 
             <p className="hero-role">
               Software Developer <span>/</span> Project Manager
@@ -323,7 +319,7 @@ export default function Page() {
                     <strong style={{ color: 'var(--ink)' }}>
                       Birthplace:
                     </strong>{' '}
-                    Ponong, Tomas Oppus, Southern Leyte
+                    Ponong, Tomas Oppus, Southern Leyte, Philippines
                   </span>
                 </div>
 
@@ -371,7 +367,7 @@ export default function Page() {
 
             <div className="hero-meta">
               <span>
-                <MapPinIcon /> {profile.location}
+                <MapPinIcon /> {profile.location}, Philippines
               </span>
               <span>
                 <EnvelopeIcon />
@@ -635,7 +631,7 @@ export default function Page() {
                 <div>
                   <h3>{certificate.name}</h3>
                   <p>
-                    {certificate.issuer} · 2026 / verify issuer date
+                    {certificate.issuer}
                   </p>
                 </div>
 
@@ -644,11 +640,7 @@ export default function Page() {
             ))}
           </div>
 
-          <p className="fine-print">
-            Certificate links were carried over from the previous
-            portfolio. Verify titles, issuers, and dates before
-            publishing.
-          </p>
+
         </section>
 
         {/* EDUCATION */}
@@ -662,34 +654,98 @@ export default function Page() {
             kicker="ACADEMIC FOUNDATION"
           />
 
-          <div className="education-block">
-            <AcademicCapIcon />
-
-            <div>
-              <p className="small-kicker">
-                2023 — PRESENT · EXPECTED JUNE 2027
-              </p>
-
-              <h3>
-                Bachelor of Science in Information Technology
-              </h3>
-
-              <p>
-                Major in Programming · Southern Leyte State
-                University — Tomas Oppus Campus
-              </p>
-
-              <span className="edu-pill">
-                <CheckBadgeIcon /> Consistent Dean&apos;s Lister
-              </span>
+          <div className="section-intro education-intro">
+            <p>My academic journey, from elementary school to my current studies in information technology.</p>
+            <div className="education-controls" aria-label="Filter education by level">
+              <div className="education-select-wrap">
+                <select
+                  className={'education-select ' + (educationView !== 'All' ? 'selected' : '')}
+                  aria-label="Education level"
+                  value={educationView === 'All' ? 'College' : educationView}
+                  onChange={(event) => setEducationView(event.target.value as 'College' | 'High School' | 'Elementary')}
+                >
+                  <option value="College">College</option>
+                  <option value="High School">High School</option>
+                  <option value="Elementary">Elementary</option>
+                </select>
+                <ChevronDownIcon aria-hidden="true" />
+              </div>
+              <button
+                type="button"
+                className={'education-all-btn ' + (educationView === 'All' ? 'selected' : '')}
+                aria-pressed={educationView === 'All'}
+                onClick={() => setEducationView('All')}
+              >
+                All
+              </button>
             </div>
           </div>
 
-          <p className="fine-print">
-            Earlier schooling is intentionally condensed to keep
-            the portfolio focused on your current technical
-            qualifications.
-          </p>
+          <div className="education-list">
+            {[
+              {
+                level: 'College',
+                period: '2023 — PRESENT · EXPECTED JUNE 2027',
+                title: 'Bachelor of Science in Information Technology',
+                detail: 'Major in Programming',
+                school: 'Southern Leyte State University — Tomas Oppus Campus',
+                location: 'Tomas Oppus, Southern Leyte, Philippines',
+                distinction: "Consistent Dean's Lister",
+              },
+              {
+                level: 'High School',
+                period: '2021 — 2023',
+                title: 'Senior High School',
+                detail: 'Technical-Vocational-Livelihood (TVL) · Information and Communications Technology (ICT) · Computer Systems Servicing (CSS)',
+                school: 'Santo Niño Academy Inc.',
+                location: 'Taliwa, Malitbog, Southern Leyte, Philippines',
+                distinction: 'Graduated with High Honors',
+              },
+              {
+                level: 'High School',
+                period: '2017 — 2021',
+                title: 'Junior High School',
+                detail: '',
+                school: 'Santo Niño Academy Inc.',
+                location: 'Taliwa, Malitbog, Southern Leyte, Philippines',
+                distinction: 'Honor Student',
+              },
+              {
+                level: 'Elementary',
+                period: '2011 — 2016',
+                title: 'Elementary Education',
+                detail: '',
+                school: 'Canlupao Elementary School',
+                location: 'Canlupao, Tomas Oppus, Southern Leyte, Philippines',
+                distinction: 'Top of the Class',
+              },
+              {
+                level: 'Elementary',
+                period: '',
+                title: 'Elementary Education',
+                detail: '',
+                school: 'Easter Faith Christian School',
+                location: 'San Isidro, Tomas Oppus, Southern Leyte, Philippines',
+                distinction: 'Graduated with Honors',
+              },
+            ]
+              .filter((school) => educationView === 'All' || school.level === educationView)
+              .map((school) => (
+                <article className="education-block" key={school.school + school.title + school.period}>
+                  <AcademicCapIcon aria-hidden="true" />
+                  <div className="education-content">
+                    <p className="small-kicker">
+                      {school.level.toUpperCase()}{school.period ? ' · ' + school.period : ''}
+                    </p>
+                    <h3>{school.title}</h3>
+                    {school.detail && <p className="education-detail">{school.detail}</p>}
+                    <p className="education-school">{school.school}</p>
+                    <p className="education-location"><MapPinIcon aria-hidden="true" /> {school.location}</p>
+                    <span className="edu-pill"><CheckBadgeIcon aria-hidden="true" /> {school.distinction}</span>
+                  </div>
+                </article>
+              ))}
+          </div>
         </section>
 
         {/* LEADERSHIP */}
@@ -805,7 +861,7 @@ export default function Page() {
               <MapPinIcon />
               <span>LOCATION · OPEN MAPS</span>
               <strong>
-                Ponong, Tomas Oppus, Southern Leyte
+                Ponong, Tomas Oppus, Southern Leyte, Philippines
               </strong>
             </a>
           </div>
